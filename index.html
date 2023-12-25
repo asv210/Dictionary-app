@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary App</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+    
+            margin: 0;
+        }
+
+        form {
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            
+        }
+
+        label {
+            margin-bottom: 10px;
+        
+        }
+
+        input {
+            padding: 5px;
+            font-weight: 200;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: x-large;
+            margin-bottom: 5px;
+            margin-top: 40px;
+        }
+
+        button {
+           padding: 14px;
+            background-color:rgb(40, 40, 223);
+            color: white;
+            border:none;
+            font-family:serif;
+            font-size: medium;
+            font-weight: 800;
+            border-radius:10px;
+            justify-content: start;
+        }
+        button:hover{
+             background-color:white;
+            color: rgb(40, 40, 223);
+        }
+        #report {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .link{
+            width: 100%;
+            text-decoration: none;
+        }
+        .link:hover{
+            color: black;
+        }
+        h2,h3,h4,h5{
+            margin:0px;
+        }
+        .audio {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .mean{
+            margin: 0px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <form>
+
+        
+        <input type="text" id="word" placeholder="Search a word here"/>
+
+        <button type="submit" class="submit">Check</button>
+
+        <p id="report"></p>
+    </form>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            let word = document.getElementById('word').value;
+            let url = `http://localhost:3000/searchword?entry=${word}`;
+            fetch(url)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.status}`);
+                    }
+                    report.innerHTML = "";
+                    return response.json();
+                })
+                .then((resp) => {
+                    console.log(resp);
+
+                    let htmlstr = `<h2>You searched for word : " <strong>${resp[0].word}</strong> "</h2> <br> 
+                    <h3 class="mean">Here are some meanings :- </h3><br>`;
+
+                    for (let i = 0; i < resp[0].meanings.length; i++) {
+
+                        htmlstr += `<h4>part of speech : ${resp[0].meanings[i].partOfSpeech} </h4><br>`;
+
+                        if(resp[0].meanings[i].definitions.length>0){
+                            htmlstr += '<h5>Definitions are : </h5>';
+
+                            for (let j = 0; j < resp[0].meanings[i].definitions.length; j++) {
+                                let defs = resp[0].meanings[i].definitions[j].definition;
+                                htmlstr += `<p>${defs}<br></p>`;
+                            }
+                        }
+
+                        if(resp[0].meanings[i].synonyms.length>0){
+
+                            htmlstr += '<h5>synonyms are : </h5>';
+                            
+                            for (let j = 0; j < resp[0].meanings[i].synonyms.length; j++) {
+                                let syn = resp[0].meanings[i].synonyms[j];
+                                htmlstr += syn + ' , ';
+                            }
+                            htmlstr += "</br>";
+
+                        }
+
+                        if(resp[0].meanings[i].antonyms.length>0){
+
+                            htmlstr += '<h5>antonyms are : </h5>';
+
+                            for (let j = 0; j < resp[0].meanings[i].antonyms.length; j++) {
+                                let ant = resp[0].meanings[i].antonyms[j];
+                                htmlstr += ant + ' , ';
+                            }
+                            htmlstr += "</br>";
+                        
+                        }
+                        htmlstr += "</br><hr>";
+                    }
+
+                    if(resp[0].phonetics.length>0){
+
+                        htmlstr += `<h4>Few audio files : <br><div class="audio</h4>">`;
+                        
+                            for (let j = 0; j < resp[0].phonetics.length; j++) {
+                            let audio = resp[0].phonetics[j].audio;
+                            htmlstr += `<audio controls><source src="${audio}" type="audio/mp3">Your browser does not support the audio element.</audio>`;
+                        }
+                        htmlstr += "</div></br>";
+
+                    }
+                    if(resp[0].sourceUrls.length>0){
+
+                        for (let j = 0; j < resp[0].sourceUrls.length; j++) {
+                            htmlstr += `<a class="link" href="${resp[0].sourceUrls[j]}" target="_blank">Here is your link for your reference</a>`;
+                        }
+                    }
+                    report.innerHTML += htmlstr;
+                    return resp;
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+
+</html>
